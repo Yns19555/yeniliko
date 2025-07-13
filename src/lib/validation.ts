@@ -20,8 +20,8 @@ export const registerSchema = z.object({
     .max(50, 'Soyad en fazla 50 karakter olabilir')
     .regex(/^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]+$/, 'Soyad sadece harf içerebilir'),
   phone: z.string()
-    .regex(/^[\+]?[0-9\s\-\(\)]{10,}$/, 'Geçerli bir telefon numarası giriniz')
-    .optional(),
+    .optional()
+    .refine(val => !val || /^[\+]?[0-9\s\-\(\)]{10,}$/.test(val), 'Geçerli bir telefon numarası giriniz'),
   acceptTerms: z.boolean().refine(val => val === true, 'Kullanım şartlarını kabul etmelisiniz'),
   acceptMarketing: z.boolean().optional(),
 });
