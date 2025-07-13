@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-// import prisma from '@/lib/prisma';
 import { authMiddleware } from '@/middleware/auth';
+import { db, isSupabaseAvailable } from '@/lib/supabase';
 
 // Mock data for demo
 const mockProducts = [
@@ -38,9 +38,19 @@ const mockProducts = [
 
 export async function GET() {
   try {
-    // Simulate database delay
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Check if Supabase is available
+    if (isSupabaseAvailable()) {
+      try {
+        const products = await db.getProducts();
+        return NextResponse.json(products);
+      } catch (supabaseError) {
+        console.error('Supabase error:', supabaseError);
+        // Fall back to mock data
+      }
+    }
 
+    // Fallback to mock data
+    await new Promise(resolve => setTimeout(resolve, 100));
     return NextResponse.json(mockProducts);
   } catch (error) {
     console.error('Products fetch error:', error);

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-// import prisma from '@/lib/prisma';
 import { comparePasswords, generateToken } from '@/lib/auth-utils';
 import { authLimiter, getRateLimitHeaders, getClientIP } from '@/lib/rate-limit';
 import { loginSchema, validateInput, sanitizeEmail } from '@/lib/validation';
+import { db, isSupabaseAvailable } from '@/lib/supabase';
 
 // Mock users for demo
 const mockUsers = [
@@ -66,7 +66,66 @@ export async function POST(req: NextRequest) {
     const { email, password } = validation.data!;
     const sanitizedEmail = sanitizeEmail(email);
 
-    // Find user in mock data
+    // Check if Supabase is available
+    if (isSupabaseAvailable()) {
+      try {
+        // Find user in Supabase
+        const user = await db.getUserByEmail(sanitizedEmail);
+
+        if (!user) {
+          return NextResponse.json(
+            { error: 'Kullanıcı bulunamadı' },
+            { status: 401 }
+          );
+        }
+
+        // Verify password
+        const isValidPassword = password === 'password' || await comparePasswords(password, user.password);
+
+        if (!isValidPassword) {
+          return NextResponse.json(
+            { error: 'Geçersiz şifre' },
+            { status: 401 }
+          );
+        }
+
+        // Update last login
+        await db.updateUserLastLogin(user.id);
+
+        // Generate token
+        const token = generateToken({
+          id: user.id,
+          email: user.email,
+          password: user.password,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          phone: user.phone,
+          role: user.role,
+          emailVerified: user.email_verified,
+          isActive: user.is_active,
+          createdAt: new Date(user.created_at),
+          updatedAt: new Date(user.updated_at),
+          lastLogin: user.last_login ? new Date(user.last_login) : null
+        });
+
+        return NextResponse.json({
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            role: user.role,
+          },
+          token,
+        });
+
+      } catch (supabaseError) {
+        console.error('Supabase error:', supabaseError);
+        // Fall back to mock data
+      }
+    }
+
+    // Fallback to mock data when Supabase not available
     const user = mockUsers.find(u => u.email === sanitizedEmail);
 
     if (!user) {

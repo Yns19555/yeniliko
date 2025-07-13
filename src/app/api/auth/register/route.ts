@@ -1,24 +1,92 @@
 import { NextRequest, NextResponse } from 'next/server';
-// import prisma from '@/lib/prisma';
 import { hashPassword, generateToken } from '@/lib/auth-utils';
+import { db, isSupabaseAvailable } from '@/lib/supabase';
+import { registerSchema, validateInput, sanitizeEmail } from '@/lib/validation';
 
-// Mock users storage (in real app, this would be database)
+// Mock users storage (fallback when Supabase not available)
 const mockUsers: any[] = [];
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, firstName, lastName, phone } = await req.json();
+    const body = await req.json();
 
-    // Email validation
-    if (!email || !email.includes('@')) {
+    // Validate input
+    const validation = validateInput(registerSchema, body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Geçerli bir email adresi giriniz' },
+        { error: validation.errors?.[0] || 'Geçersiz kayıt verileri' },
         { status: 400 }
       );
     }
 
-    // Check if user exists
-    const existingUser = mockUsers.find(u => u.email === email);
+    const { email, password, firstName, lastName, phone, acceptMarketing } = validation.data!;
+    const sanitizedEmail = sanitizeEmail(email);
+
+    // Check if Supabase is available
+    if (isSupabaseAvailable()) {
+      try {
+        // Check if user exists in Supabase
+        const existingUser = await db.getUserByEmail(sanitizedEmail);
+
+        if (existingUser) {
+          return NextResponse.json(
+            { error: 'Bu email adresi zaten kullanımda' },
+            { status: 400 }
+          );
+        }
+
+        // Hash password
+        const hashedPassword = await hashPassword(password);
+
+        // Create user in Supabase
+        const user = await db.createUser({
+          email: sanitizedEmail,
+          password: hashedPassword,
+          first_name: firstName,
+          last_name: lastName,
+          phone: phone || undefined,
+          role: 'USER',
+          email_verified: false,
+          is_active: true,
+          accept_marketing: acceptMarketing || false
+        });
+
+        // Generate token
+        const token = generateToken({
+          id: user.id,
+          email: user.email,
+          password: user.password,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          phone: user.phone,
+          role: user.role,
+          emailVerified: user.email_verified,
+          isActive: user.is_active,
+          createdAt: new Date(user.created_at),
+          updatedAt: new Date(user.updated_at),
+          lastLogin: user.last_login ? new Date(user.last_login) : null
+        });
+
+        // Return user data and token
+        return NextResponse.json({
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            role: user.role,
+          },
+          token,
+        });
+
+      } catch (supabaseError) {
+        console.error('Supabase error:', supabaseError);
+        // Fall back to mock data
+      }
+    }
+
+    // Fallback to mock data when Supabase not available
+    const existingUser = mockUsers.find(u => u.email === sanitizedEmail);
 
     if (existingUser) {
       return NextResponse.json(
@@ -30,10 +98,10 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
+    // Create user in mock storage
     const user = {
       id: `user_${Date.now()}`,
-      email,
+      email: sanitizedEmail,
       password: hashedPassword,
       firstName,
       lastName,
@@ -46,7 +114,6 @@ export async function POST(req: NextRequest) {
       lastLogin: null as Date | null
     };
 
-    // Add to mock storage
     mockUsers.push(user);
 
     // Generate token

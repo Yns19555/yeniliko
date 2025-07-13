@@ -43,7 +43,7 @@ export const productSchema = z.object({
     .min(0, 'Stok sayısı negatif olamaz')
     .max(9999, 'Stok sayısı çok yüksek'),
   category: z.enum(['Aksesuarlar', 'Dekorasyon', 'Ofis', 'Oyuncaklar'], {
-    errorMap: () => ({ message: 'Geçerli bir kategori seçiniz' })
+    message: 'Geçerli bir kategori seçiniz'
   }),
   images: z.array(z.string().url('Geçerli bir resim URL\'si giriniz'))
     .min(1, 'En az bir resim eklemelisiniz')
@@ -88,7 +88,7 @@ export function validateInput<T>(schema: z.ZodSchema<T>, data: unknown): {
     return { success: true, data: validatedData };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors = error.errors.map(err => err.message);
+      const errors = error.issues.map(err => err.message);
       return { success: false, errors };
     }
     return { success: false, errors: ['Validation failed'] };
