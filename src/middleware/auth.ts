@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth-utils';
-import prisma from '@/lib/prisma';
-import { User } from '@/generated/prisma';
+import { db, User } from '@/lib/supabase';
 
 // Extend NextRequest to include user
 declare module 'next/server' {
@@ -29,9 +28,7 @@ export async function authMiddleware(req: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id as string },
-    });
+    const user = await db.getUserByEmail(decoded.email as string);
 
     if (!user) {
       return NextResponse.json(
