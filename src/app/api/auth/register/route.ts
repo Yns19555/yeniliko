@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, password, firstName, lastName, phone, acceptMarketing } = validation.data!;
+    const { email, password, firstName, lastName, phone, acceptTerms, acceptMarketing } = validation.data!;
     const sanitizedEmail = sanitizeEmail(email);
 
     // Check if Supabase is available

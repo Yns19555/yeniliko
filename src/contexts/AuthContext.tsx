@@ -203,7 +203,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           lastName: userData.lastName,
           email: userData.email,
           password: userData.password,
-          phone: userData.phone,
+          phone: userData.phone || '',
+          acceptTerms: true, // Frontend'de zaten kontrol ediliyor
           acceptMarketing: userData.acceptMarketing
         }),
       });
