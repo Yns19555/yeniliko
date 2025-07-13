@@ -120,12 +120,36 @@ const demoUsers = [
 
 export default function AdminUsersPage() {
   const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState(demoUsers);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Kullanıcıları API'den yükle
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/admin/users');
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data);
+        } else {
+          console.error('Kullanıcılar yüklenemedi');
+          setUsers(demoUsers); // Fallback to demo data
+        }
+      } catch (error) {
+        console.error('API error:', error);
+        setUsers(demoUsers); // Fallback to demo data
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Filtreleme ve arama
   const filteredUsers = users.filter(user => {
@@ -228,13 +252,24 @@ export default function AdminUsersPage() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Kullanıcılar yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Kullanıcı Yönetimi</h1>
-          <p className="text-gray-600">Tüm kullanıcıları görüntüleyin ve yönetin</p>
+          <p className="text-gray-600">Tüm kullanıcıları görüntüleyin ve yönetin ({users.length} kullanıcı)</p>
         </div>
         <div className="flex items-center space-x-3">
           <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">

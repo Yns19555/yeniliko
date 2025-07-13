@@ -136,45 +136,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Giriş yap
   const login = useCallback(async (email: string, password: string, rememberMe = false): Promise<{ success: boolean; message: string }> => {
     setIsLoading(true);
-    
+
     try {
-      // Demo authentication (gerçek uygulamada API çağrısı)
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simüle edilmiş gecikme
-      
-      // Demo şifreler
-      const validCredentials = [
-        { email: 'admin@yeniliko.com', password: 'admin123' },
-        { email: 'user@example.com', password: 'user123' },
-        { email: 'test@test.com', password: '123456' }
-      ];
+      // API çağrısı yap
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      const isValidCredential = validCredentials.some(
-        cred => cred.email === email && cred.password === password
-      );
+      const data = await response.json();
 
-      if (!isValidCredential) {
-        return { success: false, message: 'E-posta veya şifre hatalı!' };
+      if (!response.ok) {
+        return { success: false, message: data.error || 'Giriş başarısız!' };
       }
 
-      // Kullanıcıyı bul veya oluştur
-      let foundUser = demoUsers.find(u => u.email === email);
-      if (!foundUser) {
-        foundUser = {
-          id: Date.now().toString(),
-          email,
-          firstName: 'Test',
-          lastName: 'User',
-          role: 'user',
-          emailVerified: true,
-          createdAt: new Date().toISOString()
-        };
-      }
+      // API'den gelen kullanıcı bilgilerini kullan
+      const { user: apiUser, token } = data;
 
-      // Last login güncelle
-      foundUser.lastLogin = new Date().toISOString();
-
-      // Token oluştur
-      const token = generateToken(foundUser.id);
+      const foundUser = {
+        id: apiUser.id,
+        email: apiUser.email,
+        firstName: apiUser.firstName,
+        lastName: apiUser.lastName,
+        role: apiUser.role,
+        emailVerified: true,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      };
 
       // Kullanıcı bilgilerini kaydet
       setUser(foundUser);
@@ -201,30 +192,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simüle edilmiş gecikme
+      // API çağrısı yap
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
+          password: userData.password,
+          phone: userData.phone,
+          acceptMarketing: userData.acceptMarketing
+        }),
+      });
 
-      // E-posta kontrolü
-      const existingUser = demoUsers.find(u => u.email === userData.email);
-      if (existingUser) {
-        return { success: false, message: 'Bu e-posta adresi zaten kayıtlı!' };
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, message: data.error || 'Kayıt başarısız!' };
       }
 
-      // Yeni kullanıcı oluştur
-      const newUser: User = {
-        id: Date.now().toString(),
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        phone: userData.phone,
-        role: 'user',
-        emailVerified: false, // E-posta doğrulaması gerekli
-        createdAt: new Date().toISOString()
+      // API'den gelen kullanıcı bilgilerini kullan
+      const { user: apiUser, token } = data;
+
+      const newUser = {
+        id: apiUser.id,
+        email: apiUser.email,
+        firstName: apiUser.firstName,
+        lastName: apiUser.lastName,
+        role: apiUser.role,
+        emailVerified: true,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
       };
 
-      // Demo için kullanıcıları listeye ekle
-      demoUsers.push(newUser);
+      // Kullanıcı bilgilerini kaydet
+      setUser(newUser);
 
-      return { success: true, message: 'Kayıt başarılı! E-posta adresinizi doğrulayın.' };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('yeniliko-token', token);
+        localStorage.setItem('yeniliko-user', JSON.stringify(newUser));
+      }
+
+      return { success: true, message: 'Kayıt başarılı! Hoş geldiniz!' };
     } catch (error) {
       return { success: false, message: 'Kayıt sırasında bir hata oluştu!' };
     } finally {

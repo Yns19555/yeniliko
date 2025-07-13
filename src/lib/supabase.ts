@@ -71,7 +71,35 @@ export const db = {
       .from('users')
       .update({ last_login: new Date().toISOString() })
       .eq('id', userId);
-    
+
+    if (error) throw error;
+  },
+
+  async getAllUsers() {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteUser(userId: string) {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (error) throw error;
+  },
+
+  async deleteAllUsersExceptAdmin() {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .neq('role', 'ADMIN');
+
     if (error) throw error;
   },
 

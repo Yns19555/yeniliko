@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
           last_name: lastName,
           phone: phone || undefined,
           role: 'USER',
-          email_verified: false,
+          email_verified: true, // Auto-verify for demo
           is_active: true,
           accept_marketing: acceptMarketing || false
         });
