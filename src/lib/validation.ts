@@ -10,7 +10,7 @@ export const registerSchema = z.object({
   email: z.string().email('Geçerli bir email adresi giriniz'),
   password: z.string()
     .min(6, 'Şifre en az 6 karakter olmalıdır')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir'),
+    .max(100, 'Şifre en fazla 100 karakter olabilir'),
   firstName: z.string()
     .min(2, 'Ad en az 2 karakter olmalıdır')
     .max(50, 'Ad en fazla 50 karakter olabilir')
@@ -21,7 +21,7 @@ export const registerSchema = z.object({
     .regex(/^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]+$/, 'Soyad sadece harf içerebilir'),
   phone: z.string()
     .optional()
-    .refine(val => !val || /^[\+]?[0-9\s\-\(\)]{10,}$/.test(val), 'Geçerli bir telefon numarası giriniz'),
+    .refine(val => !val || val.trim() === '' || /^[\+]?[0-9\s\-\(\)]{10,}$/.test(val), 'Geçerli bir telefon numarası giriniz'),
   acceptTerms: z.boolean().refine(val => val === true, 'Kullanım şartlarını kabul etmelisiniz'),
   acceptMarketing: z.boolean().optional(),
 });

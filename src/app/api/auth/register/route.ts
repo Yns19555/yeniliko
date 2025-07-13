@@ -11,10 +11,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Validate input
+    console.log('Register request body:', body);
     const validation = validateInput(registerSchema, body);
     if (!validation.success) {
+      console.log('Validation errors:', validation.errors);
       return NextResponse.json(
-        { error: validation.errors?.[0] || 'Geçersiz kayıt verileri' },
+        {
+          error: validation.errors?.[0] || 'Geçersiz kayıt verileri',
+          details: validation.errors
+        },
         { status: 400 }
       );
     }
