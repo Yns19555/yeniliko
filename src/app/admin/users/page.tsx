@@ -477,7 +477,7 @@ export default function AdminUsersPage() {
                     </div>
                     {user.cartItems.length > 0 && (
                       <div className="text-sm text-gray-500">
-                        ₺{user.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)} değer
+                        ₺{user.cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)} değer
                       </div>
                     )}
                   </td>
