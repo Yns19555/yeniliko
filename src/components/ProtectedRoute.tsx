@@ -83,7 +83,7 @@ export default function ProtectedRoute({
             onClick={() => router.push('/dashboard')}
             className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            Dashboard'a Dön
+            Dashboard&apos;a Dön
           </button>
         </div>
       </div>

@@ -357,7 +357,7 @@ export default function CheckoutPage() {
                       <strong>Ethereum Adresi:</strong> 0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4
                     </p>
                     <p className="text-xs text-yellow-600">
-                      Ödeme sonrası transaction hash'ini bize iletin.
+                      Ödeme sonrası transaction hash&apos;ini bize iletin.
                     </p>
                   </div>
                 )}

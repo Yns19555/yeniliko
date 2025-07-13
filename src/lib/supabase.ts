@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
   console.warn('Supabase environment variables not found, using mock data');
 }
 
@@ -150,5 +150,14 @@ export const db = {
 
 // Check if Supabase is available
 export const isSupabaseAvailable = () => {
-  return !!(supabaseUrl && supabaseAnonKey);
+  const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  console.log('🔍 Supabase Environment Check:');
+  console.log('- URL exists:', hasUrl);
+  console.log('- Key exists:', hasKey);
+  console.log('- URL value:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('- Key value:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'EXISTS' : 'MISSING');
+
+  return hasUrl && hasKey;
 };

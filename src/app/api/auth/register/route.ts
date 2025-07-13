@@ -28,12 +28,20 @@ export async function POST(req: NextRequest) {
     const sanitizedEmail = sanitizeEmail(email);
 
     // Check if Supabase is available
-    if (isSupabaseAvailable()) {
+    console.log('🚀 Register API - Supabase Check Starting...');
+    const supabaseAvailable = isSupabaseAvailable();
+    console.log('🔗 Supabase Available:', supabaseAvailable);
+
+    if (supabaseAvailable) {
+      console.log('✅ Supabase is available, attempting to create user...');
       try {
         // Check if user exists in Supabase
+        console.log('🔍 Checking if user exists:', sanitizedEmail);
         const existingUser = await db.getUserByEmail(sanitizedEmail);
+        console.log('👤 Existing user check result:', existingUser ? 'USER EXISTS' : 'USER NOT FOUND');
 
         if (existingUser) {
+          console.log('❌ User already exists, returning error');
           return NextResponse.json(
             { error: 'Bu email adresi zaten kullanımda' },
             { status: 400 }
@@ -41,9 +49,18 @@ export async function POST(req: NextRequest) {
         }
 
         // Hash password
+        console.log('🔐 Hashing password...');
         const hashedPassword = await hashPassword(password);
+        console.log('✅ Password hashed successfully');
 
         // Create user in Supabase
+        console.log('📝 Creating user in Supabase with data:', {
+          email: sanitizedEmail,
+          first_name: firstName,
+          last_name: lastName,
+          phone: phone || undefined,
+          role: 'USER'
+        });
         const user = await db.createUser({
           email: sanitizedEmail,
           password: hashedPassword,
@@ -56,7 +73,10 @@ export async function POST(req: NextRequest) {
           accept_marketing: acceptMarketing || false
         });
 
+        console.log('🎉 User created successfully in Supabase:', user.id);
+
         // Generate token
+        console.log('🔑 Generating JWT token...');
         const token = generateToken({
           id: user.id,
           email: user.email,
@@ -72,6 +92,9 @@ export async function POST(req: NextRequest) {
           lastLogin: user.last_login ? new Date(user.last_login) : null
         });
 
+        console.log('✅ Token generated successfully');
+        console.log('📤 Returning success response to client');
+
         // Return user data and token
         return NextResponse.json({
           user: {
@@ -85,12 +108,17 @@ export async function POST(req: NextRequest) {
         });
 
       } catch (supabaseError) {
-        console.error('Supabase error:', supabaseError);
+        console.error('❌ Supabase error occurred:', supabaseError);
+        console.error('📋 Error details:', JSON.stringify(supabaseError, null, 2));
+        console.log('🔄 Falling back to mock data...');
         // Fall back to mock data
       }
+    } else {
+      console.log('⚠️ Supabase not available, using mock data');
     }
 
     // Fallback to mock data when Supabase not available
+    console.log('📝 Using mock data storage...');
     const existingUser = mockUsers.find(u => u.email === sanitizedEmail);
 
     if (existingUser) {

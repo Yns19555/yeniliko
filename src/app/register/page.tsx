@@ -389,7 +389,7 @@ export default function Register() {
                   <Link href="/privacy" className="text-orange-500 hover:text-orange-400 transition-colors">
                     Gizlilik Politikası
                   </Link>
-                  'nı kabul ediyorum
+                  &apos;nı kabul ediyorum
                 </span>
               </label>
               

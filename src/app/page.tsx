@@ -1,6 +1,7 @@
 'use client';
 
 import Image from "next/image";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useCart } from "@/contexts/CartContext";
 import { useMemo, useCallback } from "react";
@@ -62,12 +63,12 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <a href="/products" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 rounded-xl font-semibold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 shadow-lg">
+                <Link href="/products" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 rounded-xl font-semibold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 shadow-lg">
                   <span>Ürünleri Keşfet</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
-                </a>
+                </Link>
                 <button className="border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white px-10 py-4 rounded-xl font-semibold text-lg transition-all">
                   Özel Tasarım Yaptır
                 </button>
@@ -333,9 +334,9 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-16">
-            <a href="/products" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg">
+            <Link href="/products" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg">
               Tüm Ürünleri Görüntüle
-            </a>
+            </Link>
           </div>
         </div>
       </section>

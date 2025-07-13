@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     if (!existingAdmin) {
       const hashedPassword = await hashPassword('admin123');
-      
+
       await db.createUser({
         email: adminEmail,
         password: hashedPassword,
