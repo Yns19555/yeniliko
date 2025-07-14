@@ -205,11 +205,39 @@ export default function AdminUsersPage() {
   });
 
   const toggleUserStatus = (userId: string) => {
-    setUsers(users.map(user => 
-      user.id === userId 
+    setUsers(users.map(user =>
+      user.id === userId
         ? { ...user, isActive: !user.isActive }
         : user
     ));
+  };
+
+  const changeUserRole = async (userId: string, newRole: string) => {
+    try {
+      // API call to update user role
+      const response = await fetch(`/api/admin/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: newRole.toUpperCase() }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setUsers(users.map(user =>
+          user.id === userId
+            ? { ...user, role: newRole }
+            : user
+        ));
+        alert('Kullanıcı rolü başarıyla güncellendi!');
+      } else {
+        alert('Rol güncellenirken hata oluştu!');
+      }
+    } catch (error) {
+      console.error('Role update error:', error);
+      alert('Rol güncellenirken hata oluştu!');
+    }
   };
 
   const getStatusBadge = (user: any) => {
@@ -455,8 +483,19 @@ export default function AdminUsersPage() {
                     <div className="text-sm text-gray-500">{user.phone}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="space-y-1">
-                      {getRoleBadge(user.role)}
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        {getRoleBadge(user.role)}
+                        <select
+                          value={user.role}
+                          onChange={(e) => changeUserRole(user.id, e.target.value)}
+                          className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                        >
+                          <option value="user">Kullanıcı</option>
+                          <option value="manager">Yönetici</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
                       {getStatusBadge(user)}
                     </div>
                   </td>

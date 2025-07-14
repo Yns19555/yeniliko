@@ -69,8 +69,7 @@ export async function POST(req: NextRequest) {
           phone: phone || undefined,
           role: 'USER',
           email_verified: true, // Auto-verify for demo
-          is_active: true,
-          accept_marketing: acceptMarketing || false
+          is_active: true
         });
 
         console.log('🎉 User created successfully in Supabase:', user.id);

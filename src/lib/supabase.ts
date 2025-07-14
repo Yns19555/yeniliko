@@ -22,7 +22,7 @@ export interface User {
   role: 'USER' | 'ADMIN' | 'MANAGER';
   email_verified: boolean;
   is_active: boolean;
-  accept_marketing: boolean;
+  accept_marketing?: boolean;
   created_at: string;
   updated_at: string;
   last_login?: string;
@@ -143,8 +143,48 @@ export const db = {
       .from('products')
       .update({ is_active: false })
       .eq('id', id);
-    
+
     if (error) throw error;
+  }
+
+  // Update user role
+  async updateUserRole(userId: string, role: string): Promise<User | null> {
+    const { data, error } = await this.supabase
+      .from('users')
+      .update({
+        role: role,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase updateUserRole error:', error);
+      throw new Error(`Failed to update user role: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  // Update user status (active/inactive)
+  async updateUserStatus(userId: string, isActive: boolean): Promise<User | null> {
+    const { data, error } = await this.supabase
+      .from('users')
+      .update({
+        is_active: isActive,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase updateUserStatus error:', error);
+      throw new Error(`Failed to update user status: ${error.message}`);
+    }
+
+    return data;
   }
 };
 
