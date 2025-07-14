@@ -5,19 +5,22 @@ import { activityTracker, UserActivity, OnlineUser } from '@/lib/activity-tracke
 
 interface UserActivityTrackerProps {
   userId?: string; // Belirli bir kullanıcı için, yoksa tüm aktiviteler
+  userName?: string; // Kullanıcı adı (detay sayfası için)
   showOnlineUsers?: boolean;
   maxActivities?: number;
 }
 
-export default function UserActivityTracker({ 
-  userId, 
-  showOnlineUsers = true, 
-  maxActivities = 50 
+export default function UserActivityTracker({
+  userId,
+  userName,
+  showOnlineUsers = true,
+  maxActivities = 50
 }: UserActivityTrackerProps) {
   const [activities, setActivities] = useState<UserActivity[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'activities' | 'online'>('activities');
+  const [userOnlineStatus, setUserOnlineStatus] = useState<OnlineUser | null>(null);
 
   // Aktiviteleri yükle
   const loadActivities = async () => {
@@ -44,6 +47,12 @@ export default function UserActivityTracker({
     try {
       const data = await activityTracker.getOnlineUsers();
       setOnlineUsers(data);
+
+      // Eğer belirli bir kullanıcı için ise, o kullanıcının online durumunu bul
+      if (userId) {
+        const userStatus = data.find(u => u.user_id === userId);
+        setUserOnlineStatus(userStatus || null);
+      }
     } catch (error) {
       console.error('Failed to load online users:', error);
     }
@@ -52,7 +61,7 @@ export default function UserActivityTracker({
   // İlk yükleme
   useEffect(() => {
     loadActivities();
-    if (showOnlineUsers) {
+    if (showOnlineUsers || userId) {
       loadOnlineUsers();
     }
   }, [userId, maxActivities, showOnlineUsers]);
@@ -61,7 +70,7 @@ export default function UserActivityTracker({
   useEffect(() => {
     const interval = setInterval(() => {
       loadActivities();
-      if (showOnlineUsers) {
+      if (showOnlineUsers || userId) {
         loadOnlineUsers();
       }
     }, 30000);
@@ -159,9 +168,29 @@ export default function UserActivityTracker({
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {userId ? 'Kullanıcı Aktiviteleri' : 'Tüm Aktiviteler'}
-          </h3>
+          <div className="flex items-center space-x-3">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {userId ? (userName ? `${userName} - Aktiviteler` : 'Kullanıcı Aktiviteleri') : 'Tüm Aktiviteler'}
+            </h3>
+            {userId && (
+              <div className="flex items-center space-x-2">
+                <div className={`w-3 h-3 rounded-full ${userOnlineStatus?.is_online ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                <span className={`text-sm font-medium ${userOnlineStatus?.is_online ? 'text-green-700' : 'text-gray-500'}`}>
+                  {userOnlineStatus?.is_online ? 'Online' : 'Offline'}
+                </span>
+                {userOnlineStatus?.is_online && userOnlineStatus.current_page && (
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    📍 {getPageName(userOnlineStatus.current_page)}
+                  </span>
+                )}
+                {userOnlineStatus?.last_seen && (
+                  <span className="text-xs text-gray-400">
+                    Son görülme: {formatTime(userOnlineStatus.last_seen)}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex space-x-1">
             <button
               onClick={() => setActiveTab('activities')}

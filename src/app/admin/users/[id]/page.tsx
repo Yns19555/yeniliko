@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import UserActivityTracker from '@/components/admin/UserActivityTracker';
 
 // Demo kullanıcı verisi (gerçek uygulamada API'den gelecek)
 const getUserById = (id: string) => {
@@ -514,6 +515,16 @@ export default function AdminUserDetailPage() {
                 </div>
 
                 <div className="border-t pt-6">
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">Kullanıcı Aktiviteleri</h4>
+                  <UserActivityTracker
+                    userId={user.id}
+                    userName={`${user.firstName} ${user.lastName}`}
+                    showOnlineUsers={false}
+                    maxActivities={50}
+                  />
+                </div>
+
+                <div className="border-t pt-6 mt-6">
                   <h4 className="text-md font-semibold text-gray-900 mb-4">Tehlikeli İşlemler</h4>
                   <div className="space-y-3">
                     <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
