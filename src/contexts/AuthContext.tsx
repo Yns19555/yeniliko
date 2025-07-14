@@ -179,9 +179,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem('yeniliko-remember', 'true');
         }
 
-        // Aktivite takibini başlat
-        trackLogin(foundUser.id);
-        activityTracker.startHeartbeat(foundUser.id);
+        // Aktivite takibini başlat (Supabase tabloları hazırsa)
+        try {
+          trackLogin(foundUser.id);
+          activityTracker.startHeartbeat(foundUser.id);
+        } catch (error) {
+          console.warn('Activity tracking not available:', error);
+        }
       }
 
       return { success: true, message: 'Giriş başarılı!' };
@@ -254,8 +258,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     // Aktivite takibini durdur
     if (user && typeof window !== 'undefined') {
-      trackLogout(user.id);
-      activityTracker.stopHeartbeat();
+      try {
+        trackLogout(user.id);
+        activityTracker.stopHeartbeat();
+      } catch (error) {
+        console.warn('Activity tracking not available:', error);
+      }
     }
 
     setUser(null);
