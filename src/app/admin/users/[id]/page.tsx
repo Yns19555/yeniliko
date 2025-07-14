@@ -4,9 +4,31 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import UserActivityTracker from '@/components/admin/UserActivityTracker';
+import { supabase } from '@/lib/supabase';
 
-// Demo kullanıcı verisi (gerçek uygulamada API'den gelecek)
-const getUserById = (id: string) => {
+// Supabase'den kullanıcı verisi çek
+const getUserById = async (id: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('User fetch error:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('User fetch failed:', error);
+    return null;
+  }
+};
+
+// Demo kullanıcı verisi (fallback için)
+const getDemoUserById = (id: string) => {
   const demoUsers = [
     {
       id: '1',
@@ -92,6 +114,62 @@ const getUserById = (id: string) => {
         { type: 'payment_success', description: 'Ödeme başarılı: ₺320', timestamp: '2024-07-11T14:25:00Z', ip: '192.168.1.105' },
         { type: 'cart_checkout', description: 'Sepeti onayladı', timestamp: '2024-07-11T14:20:00Z', ip: '192.168.1.105' }
       ]
+    },
+    {
+      id: '3',
+      firstName: 'Mehmet',
+      lastName: 'Demir',
+      email: 'mehmet@example.com',
+      phone: '+90 555 111 22 33',
+      role: 'user',
+      isActive: true,
+      emailVerified: true,
+      createdAt: '2024-02-01T00:00:00Z',
+      lastLogin: '2024-07-12T08:45:00Z',
+      totalOrders: 2,
+      totalSpent: 450,
+      avatar: null,
+      address: {
+        street: 'Atatürk Caddesi No:25',
+        city: 'Ankara',
+        district: 'Çankaya',
+        zipCode: '06100',
+        country: 'Türkiye'
+      },
+      cartItems: [],
+      orders: [],
+      activities: [
+        { type: 'login', description: 'Siteye giriş yaptı', timestamp: '2024-07-12T08:45:00Z', ip: '192.168.1.110' },
+        { type: 'product_view', description: 'Ürün görüntüledi: Modern Sandalye', timestamp: '2024-07-12T08:40:00Z', ip: '192.168.1.110' }
+      ]
+    },
+    {
+      id: '4',
+      firstName: 'Ayşe',
+      lastName: 'Kaya',
+      email: 'ayse@example.com',
+      phone: '+90 555 444 55 66',
+      role: 'manager',
+      isActive: true,
+      emailVerified: true,
+      createdAt: '2024-01-20T00:00:00Z',
+      lastLogin: '2024-07-12T11:00:00Z',
+      totalOrders: 8,
+      totalSpent: 2100,
+      avatar: null,
+      address: {
+        street: 'İnönü Bulvarı No:45',
+        city: 'İzmir',
+        district: 'Konak',
+        zipCode: '35100',
+        country: 'Türkiye'
+      },
+      cartItems: [],
+      orders: [],
+      activities: [
+        { type: 'login', description: 'Yönetici paneline giriş yaptı', timestamp: '2024-07-12T11:00:00Z', ip: '192.168.1.115' },
+        { type: 'user_view', description: 'Kullanıcı listesini görüntüledi', timestamp: '2024-07-12T10:55:00Z', ip: '192.168.1.115' }
+      ]
     }
   ];
 
@@ -106,12 +184,29 @@ export default function AdminUserDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simüle edilmiş API çağrısı
-    setTimeout(() => {
-      const userData = getUserById(userId);
-      setUser(userData);
-      setLoading(false);
-    }, 500);
+    const loadUser = async () => {
+      setLoading(true);
+      try {
+        // Önce Supabase'den dene
+        let userData = await getUserById(userId);
+
+        // Eğer Supabase'de bulunamazsa demo verilerden dene
+        if (!userData) {
+          userData = getDemoUserById(userId);
+        }
+
+        setUser(userData);
+      } catch (error) {
+        console.error('Failed to load user:', error);
+        // Hata durumunda demo verilerden dene
+        const userData = getDemoUserById(userId);
+        setUser(userData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
   }, [userId]);
 
   if (loading) {
