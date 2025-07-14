@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { activityTracker, trackLogin, trackLogout } from '@/lib/activity-tracker';
 
 // Kullanıcı tipi
 export interface User {
@@ -177,6 +178,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (rememberMe) {
           localStorage.setItem('yeniliko-remember', 'true');
         }
+
+        // Aktivite takibini başlat
+        trackLogin(foundUser.id);
+        activityTracker.startHeartbeat(foundUser.id);
       }
 
       return { success: true, message: 'Giriş başarılı!' };
@@ -247,6 +252,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Çıkış yap
   const logout = () => {
+    // Aktivite takibini durdur
+    if (user && typeof window !== 'undefined') {
+      trackLogout(user.id);
+      activityTracker.stopHeartbeat();
+    }
+
     setUser(null);
 
     if (typeof window !== 'undefined') {

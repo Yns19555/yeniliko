@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import UserActivityTracker from '@/components/admin/UserActivityTracker';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Demo kullanıcı verileri (gerçek uygulamada API'den gelecek)
@@ -242,21 +243,21 @@ export default function AdminUsersPage() {
 
   const getStatusBadge = (user: any) => {
     if (!user.isActive) {
-      return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Pasif</span>;
+      return <span className="px-3 py-1 text-sm font-bold bg-red-100 text-red-800 rounded-full border border-red-200">Pasif</span>;
     }
     if (!user.emailVerified) {
-      return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">E-posta Doğrulanmamış</span>;
+      return <span className="px-3 py-1 text-sm font-bold bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">E-posta Doğrulanmamış</span>;
     }
-    return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Aktif</span>;
+    return <span className="px-3 py-1 text-sm font-bold bg-green-100 text-green-800 rounded-full border border-green-200">Aktif</span>;
   };
 
   const getRoleBadge = (role: string) => {
     const colors = {
-      admin: 'bg-purple-100 text-purple-800',
-      manager: 'bg-blue-100 text-blue-800',
-      user: 'bg-gray-100 text-gray-800'
+      admin: 'bg-purple-100 text-purple-800 border-purple-200',
+      manager: 'bg-blue-100 text-blue-800 border-blue-200',
+      user: 'bg-gray-100 text-gray-800 border-gray-200'
     };
-    
+
     const labels = {
       admin: 'Admin',
       manager: 'Yönetici',
@@ -264,7 +265,7 @@ export default function AdminUsersPage() {
     };
 
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[role as keyof typeof colors]}`}>
+      <span className={`px-3 py-1 text-sm font-bold rounded-full border ${colors[role as keyof typeof colors]}`}>
         {labels[role as keyof typeof labels]}
       </span>
     );
@@ -446,7 +447,7 @@ export default function AdminUsersPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   İletişim
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                   Rol & Durum
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -489,7 +490,7 @@ export default function AdminUsersPage() {
                         <select
                           value={user.role}
                           onChange={(e) => changeUserRole(user.id, e.target.value)}
-                          className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                          className="text-sm font-medium border-2 border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white shadow-sm"
                         >
                           <option value="user">Kullanıcı</option>
                           <option value="manager">Yönetici</option>
@@ -548,6 +549,11 @@ export default function AdminUsersPage() {
       {/* Results Info */}
       <div className="text-sm text-gray-600">
         {sortedUsers.length} kullanıcı gösteriliyor (toplam {users.length} kullanıcı)
+      </div>
+
+      {/* User Activity Tracker */}
+      <div className="mt-8">
+        <UserActivityTracker showOnlineUsers={true} maxActivities={100} />
       </div>
     </div>
   );
