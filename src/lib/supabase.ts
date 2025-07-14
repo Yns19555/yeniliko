@@ -138,18 +138,18 @@ export const db = {
     return data;
   },
 
-  async deleteProduct(id: string) {
+  deleteProduct: async (id: string) => {
     const { error } = await supabase
       .from('products')
       .update({ is_active: false })
       .eq('id', id);
 
     if (error) throw error;
-  }
+  },
 
   // Update user role
-  async updateUserRole(userId: string, role: string): Promise<User | null> {
-    const { data, error } = await this.supabase
+  updateUserRole: async (userId: string, role: string): Promise<User | null> => {
+    const { data, error } = await supabase
       .from('users')
       .update({
         role: role,
@@ -165,11 +165,11 @@ export const db = {
     }
 
     return data;
-  }
+  },
 
   // Update user status (active/inactive)
-  async updateUserStatus(userId: string, isActive: boolean): Promise<User | null> {
-    const { data, error } = await this.supabase
+  updateUserStatus: async (userId: string, isActive: boolean): Promise<User | null> => {
+    const { data, error } = await supabase
       .from('users')
       .update({
         is_active: isActive,

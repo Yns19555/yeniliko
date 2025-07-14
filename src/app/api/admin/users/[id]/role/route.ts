@@ -3,10 +3,10 @@ import { db, isSupabaseAvailable } from '@/lib/supabase';
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
     const { role } = await req.json();
 
     // Validate role
