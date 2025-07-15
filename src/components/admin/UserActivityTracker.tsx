@@ -37,12 +37,12 @@ export default function UserActivityTracker({
         }
       } catch (supabaseError) {
         console.warn('Supabase activity tables not ready, using demo data:', supabaseError);
-        // Demo aktivite verisi
-        data = [
+        // Demo aktivite verisi - kullanıcı ID'sine göre özelleştir
+        const demoActivities = [
           {
             id: '1',
             user_id: userId || '1',
-            activity_type: 'login',
+            activity_type: 'login' as const,
             page_url: '/admin',
             details: null,
             ip_address: '192.168.1.100',
@@ -52,17 +52,30 @@ export default function UserActivityTracker({
           {
             id: '2',
             user_id: userId || '1',
-            activity_type: 'page_view',
+            activity_type: 'page_view' as const,
             page_url: '/admin/users',
             details: null,
             ip_address: '192.168.1.100',
             user_agent: 'Demo Browser',
             created_at: new Date(Date.now() - 10 * 60 * 1000).toISOString()
+          },
+          {
+            id: '3',
+            user_id: userId || '1',
+            activity_type: 'profile_update' as const,
+            page_url: '/admin/profile',
+            details: { field: 'email' },
+            ip_address: '192.168.1.100',
+            user_agent: 'Demo Browser',
+            created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()
           }
         ];
+
+        // Eğer belirli bir kullanıcı için isteniyorsa, sadece o kullanıcının aktivitelerini filtrele
+        data = userId ? demoActivities.filter(activity => activity.user_id === userId) : demoActivities;
       }
 
-      setActivities(data);
+      setActivities(data || []);
     } catch (error) {
       console.error('Failed to load activities:', error);
       setActivities([]);

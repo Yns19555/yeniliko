@@ -6,8 +6,34 @@ import { useParams } from 'next/navigation';
 import UserActivityTracker from '@/components/admin/UserActivityTracker';
 import { supabase } from '@/lib/supabase';
 
+// User interface tanımı
+interface UserData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  role: string;
+  isActive: boolean;
+  emailVerified: boolean;
+  createdAt: string;
+  lastLogin: string | null;
+  totalOrders: number;
+  totalSpent: number;
+  cartItems: any[];
+  orders: any[];
+  activities: any[];
+  address: {
+    street: string;
+    city: string;
+    district: string;
+    zipCode: string;
+    country: string;
+  };
+}
+
 // Supabase'den kullanıcı verisi çek
-const getUserById = async (id: string) => {
+const getUserById = async (id: string): Promise<UserData | null> => {
   try {
     const { data, error } = await supabase
       .from('users')
@@ -20,7 +46,42 @@ const getUserById = async (id: string) => {
       return null;
     }
 
-    return data;
+    // Supabase verisini frontend formatına dönüştür
+    if (data) {
+      return {
+        id: data.id,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        email: data.email,
+        phone: data.phone || '',
+        role: data.role.toLowerCase(),
+        isActive: data.is_active,
+        emailVerified: data.email_verified,
+        createdAt: data.created_at,
+        lastLogin: data.last_login,
+        totalOrders: 0, // Bu bilgiler orders tablosundan gelecek
+        totalSpent: 0,
+        cartItems: [], // Bu bilgiler cart tablosundan gelecek
+        orders: [], // Bu bilgiler orders tablosundan gelecek
+        activities: [
+          {
+            type: 'register',
+            description: 'Hesap oluşturdu',
+            timestamp: data.created_at,
+            ip: '127.0.0.1'
+          }
+        ],
+        address: {
+          street: '',
+          city: '',
+          district: '',
+          zipCode: '',
+          country: 'Türkiye'
+        }
+      };
+    }
+
+    return null;
   } catch (error) {
     console.error('User fetch failed:', error);
     return null;
@@ -28,7 +89,7 @@ const getUserById = async (id: string) => {
 };
 
 // Demo kullanıcı verisi (fallback için)
-const getDemoUserById = (id: string) => {
+const getDemoUserById = (id: string): UserData | null => {
   const demoUsers = [
     {
       id: '1',
@@ -173,13 +234,13 @@ const getDemoUserById = (id: string) => {
     }
   ];
 
-  return demoUsers.find(user => user.id === id);
+  return demoUsers.find(user => user.id === id) || null;
 };
 
 export default function AdminUserDetailPage() {
   const params = useParams();
   const userId = params.id as string;
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
 
@@ -206,7 +267,9 @@ export default function AdminUserDetailPage() {
       }
     };
 
-    loadUser();
+    if (userId) {
+      loadUser();
+    }
   }, [userId]);
 
   if (loading) {
@@ -351,16 +414,16 @@ export default function AdminUserDetailPage() {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-start space-x-6">
           <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-            {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+            {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
           </div>
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Kişisel Bilgiler</h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Ad Soyad:</span> {user.firstName} {user.lastName}</p>
-                  <p><span className="font-medium">E-posta:</span> {user.email}</p>
-                  <p><span className="font-medium">Telefon:</span> {user.phone}</p>
+                  <p><span className="font-medium">Ad Soyad:</span> {user.firstName || 'Belirtilmemiş'} {user.lastName || ''}</p>
+                  <p><span className="font-medium">E-posta:</span> {user.email || 'Belirtilmemiş'}</p>
+                  <p><span className="font-medium">Telefon:</span> {user.phone || 'Belirtilmemiş'}</p>
                   <div className="flex items-center space-x-2">
                     <span className="font-medium">Rol:</span>
                     {getRoleBadge()}
@@ -375,10 +438,10 @@ export default function AdminUserDetailPage() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">İstatistikler</h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Toplam Sipariş:</span> {user.totalOrders}</p>
-                  <p><span className="font-medium">Toplam Harcama:</span> ₺{user.totalSpent}</p>
-                  <p><span className="font-medium">Sepetteki Ürün:</span> {user.cartItems.length}</p>
-                  <p><span className="font-medium">Kayıt Tarihi:</span> {formatDate(user.createdAt)}</p>
+                  <p><span className="font-medium">Toplam Sipariş:</span> {user.totalOrders || 0}</p>
+                  <p><span className="font-medium">Toplam Harcama:</span> ₺{user.totalSpent || 0}</p>
+                  <p><span className="font-medium">Sepetteki Ürün:</span> {user.cartItems?.length || 0}</p>
+                  <p><span className="font-medium">Kayıt Tarihi:</span> {user.createdAt ? formatDate(user.createdAt) : 'Belirtilmemiş'}</p>
                   <p><span className="font-medium">Son Giriş:</span> {user.lastLogin ? formatDate(user.lastLogin) : 'Hiç'}</p>
                 </div>
               </div>
@@ -425,15 +488,19 @@ export default function AdminUserDetailPage() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h3>
                 <div className="space-y-3">
-                  {user.activities.slice(0, 5).map((activity: any, index: number) => (
+                  {user.activities?.slice(0, 5).map((activity: any, index: number) => (
                     <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
                       <span className="text-xl">{getActivityIcon(activity.type)}</span>
                       <div className="flex-1">
-                        <p className="text-sm text-gray-900">{activity.description}</p>
-                        <p className="text-xs text-gray-500">{formatDate(activity.timestamp)}</p>
+                        <p className="text-sm text-gray-900">{activity.description || 'Aktivite açıklaması yok'}</p>
+                        <p className="text-xs text-gray-500">{activity.timestamp ? formatDate(activity.timestamp) : 'Tarih belirtilmemiş'}</p>
                       </div>
                     </div>
-                  ))}
+                  )) || (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>Henüz aktivite bulunmuyor</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -613,7 +680,7 @@ export default function AdminUserDetailPage() {
                   <h4 className="text-md font-semibold text-gray-900 mb-4">Kullanıcı Aktiviteleri</h4>
                   <UserActivityTracker
                     userId={user.id}
-                    userName={`${user.firstName} ${user.lastName}`}
+                    userName={`${user.firstName || 'Kullanıcı'} ${user.lastName || ''}`}
                     showOnlineUsers={false}
                     maxActivities={50}
                   />
