@@ -77,11 +77,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isClient, setIsClient] = useState(false);
 
   // Client-side mount kontrolü
-  useEffect(() => {
-    setIsClient(true);
-    checkAuthStatus();
-  }, [checkAuthStatus]);
-
   // Auth durumunu kontrol et
   const checkAuthStatus = useCallback(async () => {
     try {
@@ -111,6 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    setIsClient(true);
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   // Token geçerliliğini kontrol et (basit implementasyon)
   const isTokenValid = (token: string): boolean => {

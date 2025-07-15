@@ -120,7 +120,7 @@ export default function UserActivityTracker({
       console.error('Failed to load online users:', error);
       setOnlineUsers([]);
     }
-  }, []);
+  }, [userId]);
 
   // İlk yükleme
   useEffect(() => {
