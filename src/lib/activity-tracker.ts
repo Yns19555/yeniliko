@@ -55,7 +55,7 @@ class ActivityTracker {
     await this.trackActivity(userId, 'login');
 
     // Heartbeat başlat (her 30 saniyede bir)
-    this.startHeartbeat();
+    this.startHeartbeat(userId);
   }
 
   // Kullanıcı oturumu sonlandır
