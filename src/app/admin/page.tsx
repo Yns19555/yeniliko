@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { withAdminAuth, useAdmin } from "@/contexts/AdminContext";
+import RealTimeUserActivity from "@/components/admin/RealTimeUserActivity";
 
 // Mock data
 const stats = [
@@ -346,6 +347,15 @@ function AdminDashboard() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Real-Time User Activity Widget */}
+      <div className="mt-8">
+        <RealTimeUserActivity
+          showOnlineUsers={true}
+          showUserSessions={false}
+          refreshInterval={30000}
+        />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { activityTracker, trackLogin, trackLogout } from '@/lib/activity-tracker';
+import { activityTracker } from '@/lib/activity-tracker';
 
 // Kullanıcı tipi
 export interface User {
@@ -24,7 +24,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; message: string }>;
   register: (userData: RegisterData) => Promise<{ success: boolean; message: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateProfile: (userData: Partial<User>) => Promise<{ success: boolean; message: string }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
   forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>;
@@ -181,8 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Aktivite takibini başlat (Supabase tabloları hazırsa)
         try {
-          trackLogin(foundUser.id);
-          activityTracker.startHeartbeat(foundUser.id);
+          await activityTracker.startSession(foundUser.id);
         } catch (error) {
           console.warn('Activity tracking not available:', error);
         }
@@ -255,12 +254,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Çıkış yap
-  const logout = () => {
+  const logout = async () => {
     // Aktivite takibini durdur
     if (user && typeof window !== 'undefined') {
       try {
-        trackLogout(user.id);
-        activityTracker.stopHeartbeat();
+        await activityTracker.endSession();
       } catch (error) {
         console.warn('Activity tracking not available:', error);
       }

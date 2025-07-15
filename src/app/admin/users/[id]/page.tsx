@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import UserActivityTracker from '@/components/admin/UserActivityTracker';
+import RealTimeUserActivity from '@/components/admin/RealTimeUserActivity';
 import { supabase } from '@/lib/supabase';
 
 // User interface tanımı
@@ -612,23 +613,12 @@ export default function AdminUserDetailPage() {
           {/* Activities Tab */}
           {activeTab === 'activities' && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Tüm Aktiviteler</h3>
-              <div className="space-y-3">
-                {user.activities.map((activity: any, index: number) => (
-                  <div key={index} className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg">
-                    <span className="text-xl">{getActivityIcon(activity.type)}</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-black">{activity.description}</p>
-                      <div className="flex items-center space-x-4 mt-1">
-                        <p className="text-xs font-medium text-gray-700">{formatDate(activity.timestamp)}</p>
-                        {activity.ip && (
-                          <p className="text-xs font-medium text-gray-700">IP: {activity.ip}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <RealTimeUserActivity
+                userId={user.id}
+                showOnlineUsers={false}
+                showUserSessions={true}
+                refreshInterval={15000}
+              />
             </div>
           )}
 

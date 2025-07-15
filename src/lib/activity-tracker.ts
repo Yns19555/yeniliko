@@ -4,7 +4,7 @@ import { supabase } from './supabase';
 export interface UserActivity {
   id: string;
   user_id: string;
-  activity_type: 'login' | 'logout' | 'page_view' | 'product_view' | 'cart_add' | 'order_create' | 'profile_update';
+  activity_type: 'login' | 'logout' | 'page_view' | 'product_view' | 'cart_add' | 'cart_remove' | 'order_create' | 'profile_update' | 'search' | 'checkout_start' | 'checkout_complete';
   page_url?: string;
   product_id?: string;
   details?: any;
@@ -18,12 +18,56 @@ export interface OnlineUser {
   last_seen: string;
   current_page: string;
   is_online: boolean;
+  session_duration?: number;
+  cart_items?: any[];
+  current_section?: string;
+}
+
+export interface UserSession {
+  user_id: string;
+  session_start: string;
+  last_activity: string;
+  pages_visited: string[];
+  total_time: number;
+  cart_items: any[];
+  is_active: boolean;
 }
 
 class ActivityTracker {
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private currentUserId: string | null = null;
   private currentPage: string = '';
+  private sessionStart: Date | null = null;
+  private pagesVisited: string[] = [];
+  private lastActivity: Date = new Date();
+
+  // Kullanıcı oturumu başlat
+  async startSession(userId: string) {
+    this.currentUserId = userId;
+    this.sessionStart = new Date();
+    this.lastActivity = new Date();
+    this.pagesVisited = [];
+
+    // Online durumu güncelle
+    await this.updateOnlineStatus(userId, true);
+
+    // Login aktivitesi kaydet
+    await this.trackActivity(userId, 'login');
+
+    // Heartbeat başlat (her 30 saniyede bir)
+    this.startHeartbeat();
+  }
+
+  // Kullanıcı oturumu sonlandır
+  async endSession() {
+    if (this.currentUserId) {
+      await this.trackActivity(this.currentUserId, 'logout');
+      await this.updateOnlineStatus(this.currentUserId, false);
+      this.stopHeartbeat();
+      this.currentUserId = null;
+      this.sessionStart = null;
+    }
+  }
 
   // Aktivite kaydet
   async trackActivity(
@@ -36,16 +80,19 @@ class ActivityTracker {
     }
   ) {
     try {
+      const pageUrl = details?.pageUrl || (typeof window !== 'undefined' ? window.location.pathname : '');
+
       const activity: Omit<UserActivity, 'id' | 'created_at'> = {
         user_id: userId,
         activity_type: activityType,
-        page_url: details?.pageUrl || window.location.pathname,
+        page_url: pageUrl,
         product_id: details?.productId,
         details: details?.additionalData,
         ip_address: await this.getClientIP(),
-        user_agent: navigator.userAgent
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Server'
       };
 
+      // Supabase'e kaydet
       const { error } = await supabase
         .from('user_activities')
         .insert([activity]);
@@ -53,6 +100,13 @@ class ActivityTracker {
       if (error) {
         console.error('Activity tracking error:', error);
       }
+
+      // Sayfa ziyaretini takip et
+      if (activityType === 'page_view' && pageUrl) {
+        this.addPageVisit(pageUrl);
+      }
+
+      this.lastActivity = new Date();
     } catch (error) {
       console.error('Activity tracking failed:', error);
     }
@@ -195,14 +249,23 @@ class ActivityTracker {
     }
   }
 
-  // Online kullanıcıları getir
+  // Online kullanıcıları getir (kullanıcı bilgileriyle birlikte)
   async getOnlineUsers(): Promise<OnlineUser[]> {
     try {
       const { data, error } = await supabase
         .from('user_online_status')
-        .select('*')
+        .select(`
+          *,
+          users:user_id (
+            email,
+            first_name,
+            last_name,
+            role
+          )
+        `)
         .eq('is_online', true)
-        .gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString()); // Son 5 dakika
+        .gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Son 5 dakika
+        .order('last_seen', { ascending: false });
 
       if (error) {
         console.error('Get online users error:', error);
@@ -213,6 +276,60 @@ class ActivityTracker {
     } catch (error) {
       console.error('Get online users failed:', error);
       return [];
+    }
+  }
+
+  // Kullanıcının sepet içeriğini getir
+  async getUserCartItems(userId: string): Promise<any[]> {
+    try {
+      // LocalStorage'dan sepet bilgisini al (gerçek uygulamada database'den gelecek)
+      if (typeof window !== 'undefined') {
+        const cartData = localStorage.getItem('yeniliko-cart');
+        if (cartData) {
+          return JSON.parse(cartData);
+        }
+      }
+      return [];
+    } catch (error) {
+      console.error('Get cart items failed:', error);
+      return [];
+    }
+  }
+
+  // Kullanıcının mevcut session bilgilerini getir
+  async getUserSession(userId: string): Promise<UserSession | null> {
+    try {
+      const activities = await this.getUserActivities(userId, 100);
+      const onlineStatus = await supabase
+        .from('user_online_status')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (!activities.length) return null;
+
+      const sessionStart = activities[activities.length - 1]?.created_at;
+      const lastActivity = activities[0]?.created_at;
+      const pagesVisited = [...new Set(activities
+        .filter(a => a.activity_type === 'page_view')
+        .map(a => a.page_url)
+        .filter(Boolean)
+      )];
+
+      const cartItems = await this.getUserCartItems(userId);
+
+      return {
+        user_id: userId,
+        session_start: sessionStart,
+        last_activity: lastActivity,
+        pages_visited: pagesVisited,
+        total_time: new Date(lastActivity).getTime() - new Date(sessionStart).getTime(),
+        cart_items: cartItems,
+        is_active: onlineStatus.data?.is_online || false
+      };
+    } catch (error) {
+      console.error('Get user session failed:', error);
+      return null;
     }
   }
 
