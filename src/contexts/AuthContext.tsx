@@ -80,10 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsClient(true);
     checkAuthStatus();
-  }, []);
+  }, [checkAuthStatus]);
 
   // Auth durumunu kontrol et
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       // Browser ortamında mı kontrol et
       if (typeof window === 'undefined') {
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Token geçerliliğini kontrol et (basit implementasyon)
   const isTokenValid = (token: string): boolean => {

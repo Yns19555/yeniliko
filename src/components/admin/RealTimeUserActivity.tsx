@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { activityTracker, OnlineUser, UserActivity, UserSession } from '@/lib/activity-tracker';
 
 interface RealTimeUserActivityProps {
@@ -22,7 +22,7 @@ export default function RealTimeUserActivity({
   const [isLoading, setIsLoading] = useState(true);
 
   // Verileri yükle
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -51,7 +51,7 @@ export default function RealTimeUserActivity({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, showOnlineUsers, showUserSessions]);
 
   // İlk yükleme ve periyodik güncelleme
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function RealTimeUserActivity({
 
     const interval = setInterval(loadData, refreshInterval);
     return () => clearInterval(interval);
-  }, [userId, showOnlineUsers, showUserSessions, refreshInterval]);
+  }, [loadData, refreshInterval]);
 
   // Aktivite türü için ikon
   const getActivityIcon = (type: UserActivity['activity_type']) => {

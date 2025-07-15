@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { activityTracker, UserActivity, OnlineUser } from '@/lib/activity-tracker';
 
 interface UserActivityTrackerProps {
@@ -23,7 +23,7 @@ export default function UserActivityTracker({
   const [userOnlineStatus, setUserOnlineStatus] = useState<OnlineUser | null>(null);
 
   // Aktiviteleri yükle
-  const loadActivities = async () => {
+  const loadActivities = useCallback(async () => {
     try {
       setIsLoading(true);
       let data: UserActivity[] = [];
@@ -82,10 +82,10 @@ export default function UserActivityTracker({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, maxActivities]);
 
   // Online kullanıcıları yükle
-  const loadOnlineUsers = async () => {
+  const loadOnlineUsers = useCallback(async () => {
     try {
       let data: OnlineUser[] = [];
 
@@ -120,7 +120,7 @@ export default function UserActivityTracker({
       console.error('Failed to load online users:', error);
       setOnlineUsers([]);
     }
-  };
+  }, []);
 
   // İlk yükleme
   useEffect(() => {
@@ -128,7 +128,7 @@ export default function UserActivityTracker({
     if (showOnlineUsers || userId) {
       loadOnlineUsers();
     }
-  }, [userId, maxActivities, showOnlineUsers]);
+  }, [loadActivities, loadOnlineUsers, showOnlineUsers, userId]);
 
   // Periyodik güncelleme (30 saniyede bir)
   useEffect(() => {
@@ -140,32 +140,40 @@ export default function UserActivityTracker({
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [userId, maxActivities, showOnlineUsers]);
+  }, [loadActivities, loadOnlineUsers, showOnlineUsers, userId]);
 
   // Aktivite türü için ikon
   const getActivityIcon = (type: UserActivity['activity_type']) => {
-    const icons = {
+    const icons: Record<UserActivity['activity_type'], string> = {
       login: '🔑',
       logout: '🚪',
       page_view: '👁️',
       product_view: '🛍️',
       cart_add: '🛒',
+      cart_remove: '🗑️',
       order_create: '📦',
-      profile_update: '👤'
+      profile_update: '👤',
+      search: '🔍',
+      checkout_start: '💳',
+      checkout_complete: '✅'
     };
     return icons[type] || '📝';
   };
 
   // Aktivite türü için açıklama
   const getActivityDescription = (activity: UserActivity) => {
-    const descriptions = {
+    const descriptions: Record<UserActivity['activity_type'], string> = {
       login: 'Giriş yaptı',
       logout: 'Çıkış yaptı',
       page_view: `Sayfa görüntüledi: ${activity.page_url}`,
       product_view: `Ürün görüntüledi: ${activity.product_id}`,
       cart_add: `Sepete ürün ekledi: ${activity.product_id}`,
+      cart_remove: `Sepetten ürün çıkardı: ${activity.product_id}`,
       order_create: 'Sipariş oluşturdu',
-      profile_update: 'Profil güncelledi'
+      profile_update: 'Profil güncelledi',
+      search: `Arama yaptı: ${activity.details?.query || ''}`,
+      checkout_start: 'Ödeme işlemini başlattı',
+      checkout_complete: 'Ödeme işlemini tamamladı'
     };
     return descriptions[activity.activity_type] || 'Bilinmeyen aktivite';
   };
