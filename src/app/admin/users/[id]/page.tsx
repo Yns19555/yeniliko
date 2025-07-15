@@ -419,40 +419,40 @@ export default function AdminUserDetailPage() {
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Kişisel Bilgiler</h3>
+                <h3 className="text-lg font-bold text-black mb-3">Kişisel Bilgiler</h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Ad Soyad:</span> {user.firstName || 'Belirtilmemiş'} {user.lastName || ''}</p>
-                  <p><span className="font-medium">E-posta:</span> {user.email || 'Belirtilmemiş'}</p>
-                  <p><span className="font-medium">Telefon:</span> {user.phone || 'Belirtilmemiş'}</p>
+                  <p className="text-black"><span className="font-bold text-black">Ad Soyad:</span> {user.firstName || 'Belirtilmemiş'} {user.lastName || ''}</p>
+                  <p className="text-black"><span className="font-bold text-black">E-posta:</span> {user.email || 'Belirtilmemiş'}</p>
+                  <p className="text-black"><span className="font-bold text-black">Telefon:</span> {user.phone || 'Belirtilmemiş'}</p>
                   <div className="flex items-center space-x-2">
-                    <span className="font-medium">Rol:</span>
+                    <span className="font-bold text-black">Rol:</span>
                     {getRoleBadge()}
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="font-medium">Durum:</span>
+                    <span className="font-bold text-black">Durum:</span>
                     {getStatusBadge()}
                   </div>
                 </div>
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">İstatistikler</h3>
+                <h3 className="text-lg font-bold text-black mb-3">İstatistikler</h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Toplam Sipariş:</span> {user.totalOrders || 0}</p>
-                  <p><span className="font-medium">Toplam Harcama:</span> ₺{user.totalSpent || 0}</p>
-                  <p><span className="font-medium">Sepetteki Ürün:</span> {user.cartItems?.length || 0}</p>
-                  <p><span className="font-medium">Kayıt Tarihi:</span> {user.createdAt ? formatDate(user.createdAt) : 'Belirtilmemiş'}</p>
-                  <p><span className="font-medium">Son Giriş:</span> {user.lastLogin ? formatDate(user.lastLogin) : 'Hiç'}</p>
+                  <p className="text-black"><span className="font-bold text-black">Toplam Sipariş:</span> {user.totalOrders || 0}</p>
+                  <p className="text-black"><span className="font-bold text-black">Toplam Harcama:</span> ₺{user.totalSpent || 0}</p>
+                  <p className="text-black"><span className="font-bold text-black">Sepetteki Ürün:</span> {user.cartItems?.length || 0}</p>
+                  <p className="text-black"><span className="font-bold text-black">Kayıt Tarihi:</span> {user.createdAt ? formatDate(user.createdAt) : 'Belirtilmemiş'}</p>
+                  <p className="text-black"><span className="font-bold text-black">Son Giriş:</span> {user.lastLogin ? formatDate(user.lastLogin) : 'Hiç'}</p>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Adres Bilgileri</h3>
+                <h3 className="text-lg font-bold text-black mb-3">Adres Bilgileri</h3>
                 <div className="space-y-1">
-                  <p>{user.address.street}</p>
-                  <p>{user.address.district}, {user.address.city}</p>
-                  <p>{user.address.zipCode}</p>
-                  <p>{user.address.country}</p>
+                  <p className="text-black font-medium">{user.address.street}</p>
+                  <p className="text-black font-medium">{user.address.district}, {user.address.city}</p>
+                  <p className="text-black font-medium">{user.address.zipCode}</p>
+                  <p className="text-black font-medium">{user.address.country}</p>
                 </div>
               </div>
             </div>
@@ -486,26 +486,26 @@ export default function AdminUserDetailPage() {
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h3>
+                <h3 className="text-lg font-bold text-black mb-4">Son Aktiviteler</h3>
                 <div className="space-y-3">
                   {user.activities?.slice(0, 5).map((activity: any, index: number) => (
                     <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
                       <span className="text-xl">{getActivityIcon(activity.type)}</span>
                       <div className="flex-1">
-                        <p className="text-sm text-gray-900">{activity.description || 'Aktivite açıklaması yok'}</p>
-                        <p className="text-xs text-gray-500">{activity.timestamp ? formatDate(activity.timestamp) : 'Tarih belirtilmemiş'}</p>
+                        <p className="text-sm font-bold text-black">{activity.description || 'Aktivite açıklaması yok'}</p>
+                        <p className="text-xs font-medium text-gray-700">{activity.timestamp ? formatDate(activity.timestamp) : 'Tarih belirtilmemiş'}</p>
                       </div>
                     </div>
                   )) || (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>Henüz aktivite bulunmuyor</p>
+                    <div className="text-center py-8 text-black">
+                      <p className="font-medium">Henüz aktivite bulunmuyor</p>
                     </div>
                   )}
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Hızlı İstatistikler</h3>
+                <h3 className="text-lg font-bold text-black mb-4">Hızlı İstatistikler</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">{user.totalOrders}</div>
@@ -533,18 +533,18 @@ export default function AdminUserDetailPage() {
           {/* Orders Tab */}
           {activeTab === 'orders' && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Sipariş Geçmişi</h3>
+              <h3 className="text-lg font-bold text-black mb-4">Sipariş Geçmişi</h3>
               {user.orders.length > 0 ? (
                 <div className="space-y-4">
                   {user.orders.map((order: any) => (
                     <div key={order.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div>
-                          <h4 className="font-semibold text-gray-900">Sipariş #{order.id}</h4>
-                          <p className="text-sm text-gray-600">{formatDate(order.date)}</p>
+                          <h4 className="font-bold text-black">Sipariş #{order.id}</h4>
+                          <p className="text-sm font-medium text-gray-700">{formatDate(order.date)}</p>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold text-gray-900">₺{order.total}</div>
+                          <div className="text-lg font-bold text-black">₺{order.total}</div>
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                             order.status === 'delivered' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                           }`}>
@@ -554,7 +554,7 @@ export default function AdminUserDetailPage() {
                       </div>
                       <div className="space-y-2">
                         {order.items.map((item: any, index: number) => (
-                          <div key={index} className="flex justify-between text-sm">
+                          <div key={index} className="flex justify-between text-sm font-medium text-black">
                             <span>{item.name} x{item.quantity}</span>
                             <span>₺{item.price * item.quantity}</span>
                           </div>
@@ -566,7 +566,7 @@ export default function AdminUserDetailPage() {
               ) : (
                 <div className="text-center py-8">
                   <div className="text-4xl mb-4">📦</div>
-                  <p className="text-gray-600">Henüz sipariş bulunmuyor.</p>
+                  <p className="font-medium text-black">Henüz sipariş bulunmuyor.</p>
                 </div>
               )}
             </div>
@@ -575,7 +575,7 @@ export default function AdminUserDetailPage() {
           {/* Cart Tab */}
           {activeTab === 'cart' && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Sepet İçeriği</h3>
+              <h3 className="text-lg font-bold text-black mb-4">Sepet İçeriği</h3>
               {user.cartItems.length > 0 ? (
                 <div className="space-y-4">
                   {user.cartItems.map((item: any) => (
@@ -618,11 +618,11 @@ export default function AdminUserDetailPage() {
                   <div key={index} className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg">
                     <span className="text-xl">{getActivityIcon(activity.type)}</span>
                     <div className="flex-1">
-                      <p className="text-sm text-gray-900">{activity.description}</p>
+                      <p className="text-sm font-bold text-black">{activity.description}</p>
                       <div className="flex items-center space-x-4 mt-1">
-                        <p className="text-xs text-gray-500">{formatDate(activity.timestamp)}</p>
+                        <p className="text-xs font-medium text-gray-700">{formatDate(activity.timestamp)}</p>
                         {activity.ip && (
-                          <p className="text-xs text-gray-500">IP: {activity.ip}</p>
+                          <p className="text-xs font-medium text-gray-700">IP: {activity.ip}</p>
                         )}
                       </div>
                     </div>
@@ -635,11 +635,11 @@ export default function AdminUserDetailPage() {
           {/* Settings Tab */}
           {activeTab === 'settings' && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Kullanıcı Ayarları</h3>
+              <h3 className="text-lg font-bold text-black mb-4">Kullanıcı Ayarları</h3>
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Ad</label>
+                    <label className="block text-sm font-bold text-black mb-2">Ad</label>
                     <input
                       type="text"
                       value={user.firstName}
@@ -648,7 +648,7 @@ export default function AdminUserDetailPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Soyad</label>
+                    <label className="block text-sm font-bold text-black mb-2">Soyad</label>
                     <input
                       type="text"
                       value={user.lastName}
@@ -657,7 +657,7 @@ export default function AdminUserDetailPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                    <label className="block text-sm font-bold text-black mb-2">E-posta</label>
                     <input
                       type="email"
                       value={user.email}
@@ -677,7 +677,7 @@ export default function AdminUserDetailPage() {
                 </div>
 
                 <div className="border-t pt-6">
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">Kullanıcı Aktiviteleri</h4>
+                  <h4 className="text-md font-bold text-black mb-4">Kullanıcı Aktiviteleri</h4>
                   <UserActivityTracker
                     userId={user.id}
                     userName={`${user.firstName || 'Kullanıcı'} ${user.lastName || ''}`}
@@ -687,7 +687,7 @@ export default function AdminUserDetailPage() {
                 </div>
 
                 <div className="border-t pt-6 mt-6">
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">Tehlikeli İşlemler</h4>
+                  <h4 className="text-md font-bold text-black mb-4">Tehlikeli İşlemler</h4>
                   <div className="space-y-3">
                     <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                       Şifre Sıfırlama E-postası Gönder
