@@ -28,51 +28,10 @@ export default function UserActivityTracker({
       setIsLoading(true);
       let data: UserActivity[] = [];
 
-      // Supabase tabloları henüz oluşturulmamışsa demo data kullan
-      try {
-        if (userId) {
-          data = await activityTracker.getUserActivities(userId, maxActivities);
-        } else {
-          data = await activityTracker.getAllActivities(maxActivities);
-        }
-      } catch (supabaseError) {
-        console.warn('Supabase activity tables not ready, using demo data:', supabaseError);
-        // Demo aktivite verisi - kullanıcı ID'sine göre özelleştir
-        const demoActivities = [
-          {
-            id: '1',
-            user_id: userId || '1',
-            activity_type: 'login' as const,
-            page_url: '/admin',
-            details: null,
-            ip_address: '192.168.1.100',
-            user_agent: 'Demo Browser',
-            created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
-          },
-          {
-            id: '2',
-            user_id: userId || '1',
-            activity_type: 'page_view' as const,
-            page_url: '/admin/users',
-            details: null,
-            ip_address: '192.168.1.100',
-            user_agent: 'Demo Browser',
-            created_at: new Date(Date.now() - 10 * 60 * 1000).toISOString()
-          },
-          {
-            id: '3',
-            user_id: userId || '1',
-            activity_type: 'profile_update' as const,
-            page_url: '/admin/profile',
-            details: { field: 'email' },
-            ip_address: '192.168.1.100',
-            user_agent: 'Demo Browser',
-            created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()
-          }
-        ];
-
-        // Eğer belirli bir kullanıcı için isteniyorsa, sadece o kullanıcının aktivitelerini filtrele
-        data = userId ? demoActivities.filter(activity => activity.user_id === userId) : demoActivities;
+      if (userId) {
+        data = await activityTracker.getUserActivities(userId, maxActivities);
+      } else {
+        data = await activityTracker.getAllActivities(maxActivities);
       }
 
       setActivities(data || []);
@@ -89,32 +48,14 @@ export default function UserActivityTracker({
     try {
       let data: OnlineUser[] = [];
 
-      try {
-        data = await activityTracker.getOnlineUsers();
-      } catch (supabaseError) {
-        console.warn('Supabase online status table not ready, using demo data:', supabaseError);
-        // Demo online kullanıcı verisi
-        data = [
-          {
-            user_id: '1',
-            last_seen: new Date().toISOString(),
-            current_page: '/admin/users',
-            is_online: true
-          }
-        ];
-      }
+      data = await activityTracker.getOnlineUsers();
 
       setOnlineUsers(data);
 
       // Eğer belirli bir kullanıcı için ise, o kullanıcının online durumunu bul
       if (userId) {
         const userStatus = data.find(u => u.user_id === userId);
-        setUserOnlineStatus(userStatus || {
-          user_id: userId,
-          last_seen: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-          current_page: '/admin',
-          is_online: Math.random() > 0.5 // Random online/offline for demo
-        });
+        setUserOnlineStatus(userStatus || null);
       }
     } catch (error) {
       console.error('Failed to load online users:', error);
