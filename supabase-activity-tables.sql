@@ -4,13 +4,18 @@
 -- 1. Kullanıcı Aktiviteleri Tablosu
 CREATE TABLE IF NOT EXISTS user_activities (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  activity_type VARCHAR(50) NOT NULL CHECK (activity_type IN ('login', 'logout', 'page_view', 'product_view', 'cart_add', 'order_create', 'profile_update')),
+  user_id VARCHAR(255) NOT NULL,
+  activity_type VARCHAR(50) NOT NULL CHECK (activity_type IN (
+    'login', 'logout', 'page_view', 'product_view', 'cart_add',
+    'cart_remove', 'order_create', 'profile_update', 'search',
+    'checkout_start', 'checkout_complete'
+  )),
   page_url TEXT,
-  product_id UUID,
+  product_id VARCHAR(255),
   details JSONB,
   ip_address INET,
   user_agent TEXT,
+  session_id VARCHAR(255),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
