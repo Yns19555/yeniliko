@@ -101,10 +101,7 @@ class ActivityTracker {
         console.error('Activity tracking error:', error);
       }
 
-      // Sayfa ziyaretini takip et
-      if (activityType === 'page_view' && pageUrl) {
-        this.addPageVisit(pageUrl);
-      }
+      // Sayfa ziyareti aktivite olarak kaydedildi
 
       this.lastActivity = new Date();
     } catch (error) {
