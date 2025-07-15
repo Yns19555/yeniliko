@@ -310,7 +310,7 @@ class ActivityTracker {
       const pagesVisited = [...new Set(activities
         .filter(a => a.activity_type === 'page_view')
         .map(a => a.page_url)
-        .filter(Boolean)
+        .filter((url): url is string => Boolean(url))
       )];
 
       const cartItems = await this.getUserCartItems(userId);
